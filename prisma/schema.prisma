@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  country   String
+  createdAt DateTime @default(now())
+
+  // Only define relation on this side (no fields/references)
+  celebrityProfile Celebrity?
+  following        Follow[]   @relation("FanFollowing")
+  followers        Follow[]   @relation("CelebFollowers")
+}
+
+model Celebrity {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  name         String
+  genre        String
+  country      String
+  instagramUrl String
+  youtubeUrl   String?
+  spotifyUrl   String?
+  fanbase      Int
+  setlist      String?
+  profileViews Int      @default(0)
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  fanId       String
+  celebrityId String
+  createdAt   DateTime @default(now())
+
+  fan        User     @relation("FanFollowing", fields: [fanId], references: [id])
+  celebrity  User     @relation("CelebFollowers", fields: [celebrityId], references: [id])
+}
+
+enum Role {
+  FAN
+  CELEBRITY
+}
